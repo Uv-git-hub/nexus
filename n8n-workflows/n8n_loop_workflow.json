@@ -1,0 +1,367 @@
+{
+  "name": "NEXUS — Multi-Agent Loop Engine (Challenge 2)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nexus-emergency",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook-emergency",
+      "name": "Emergency Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [100, 400]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "nexus-basar",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "node-webhook-basar",
+      "name": "BASAR CV Alert Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [100, 600]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize payload from HERALD, BASAR, or VAPI\nconst body = $input.first().json.body || $input.first().json;\n\nconst urgency      = body.urgency      || 'MEDIUM';\nconst summary      = body.summary      || body.triage_summary || 'Community member needs assistance';\nconst from_number  = body.from_number  || body.caller        || 'unknown';\nconst source       = body.source       || body.event_type    || 'HERALD';\nconst location     = body.location     || 'Al Qua\\'a, Al Ain, UAE';\nconst call_id      = body.call_id      || `nexus_${Date.now()}`;\n\nreturn [{\n  json: {\n    urgency,\n    summary,\n    from_number,\n    source,\n    location,\n    call_id,\n    timestamp: new Date().toISOString(),\n    loop_iteration: body.loop_iteration || 1\n  }\n}];"
+      },
+      "id": "node-normalize",
+      "name": "Normalize Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [340, 500]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key",          "value": "={{ $env.ANTHROPIC_API_KEY }}" },
+            { "name": "anthropic-version",  "value": "2023-06-01" },
+            { "name": "Content-Type",       "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 300,\n  \"system\": \"You are the NEXUS Triage Intent Classifier for rural UAE communities (Challenge 2: Reaching people quickly). Analyze the input and output ONLY valid JSON:\\n{\\\"intent\\\": \\\"emergency|query|escalate|false_alarm\\\", \\\"urgency\\\": \\\"LOW|MEDIUM|HIGH|EMERGENCY\\\", \\\"requires_voice_call\\\": true/false, \\\"requires_whatsapp\\\": true/false, \\\"estimated_response_minutes\\\": number, \\\"confidence\\\": 0.0-1.0, \\\"reasoning\\\": \\\"one line\\\"}\",\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"Source: {{ $json.source }}\\nUrgency claimed: {{ $json.urgency }}\\nSummary: {{ $json.summary }}\\nLocation: {{ $json.location }}\"\n  }]\n}"
+      },
+      "id": "node-intent-classifier",
+      "name": "ORACLE Intent Classifier (Claude)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [580, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.content[0].text;\nlet classification;\ntry {\n  classification = JSON.parse(raw);\n} catch(e) {\n  classification = { intent: 'escalate', urgency: 'HIGH', requires_voice_call: true, requires_whatsapp: true, estimated_response_minutes: 5, confidence: 0.7, reasoning: 'Parse fallback' };\n}\n\n// Merge with previous node data\nconst prev = $('Normalize Payload').first().json;\n\nreturn [{\n  json: {\n    ...prev,\n    intent:                    classification.intent,\n    urgency:                   classification.urgency,\n    requires_voice_call:       classification.requires_voice_call,\n    requires_whatsapp:         classification.requires_whatsapp,\n    estimated_response_minutes:classification.estimated_response_minutes,\n    confidence:                classification.confidence,\n    reasoning:                 classification.reasoning\n  }\n}];"
+      },
+      "id": "node-parse-intent",
+      "name": "Parse Intent + Merge",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [820, 500]
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{ $json.urgency }}",
+        "rules": {
+          "rules": [
+            { "value2": "EMERGENCY", "output": 0 },
+            { "value2": "HIGH",      "output": 1 },
+            { "value2": "MEDIUM",    "output": 2 },
+            { "value2": "LOW",       "output": 3 }
+          ]
+        },
+        "fallbackOutput": 2
+      },
+      "id": "node-urgency-router",
+      "name": "Urgency Router (Switch)",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [1060, 500]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8002/trigger-call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"urgency\": \"{{ $json.urgency }}\",\n  \"summary\": \"{{ $json.summary }}\",\n  \"location\": \"{{ $json.location }}\",\n  \"source\": \"{{ $json.source }}\",\n  \"clinic_phone\": \"{{ $env.DEMO_CLINIC_PHONE }}\"\n}"
+      },
+      "id": "node-sawt-emergency",
+      "name": "SAWT — Emergency Voice Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1300, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8002/trigger-call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"urgency\": \"{{ $json.urgency }}\",\n  \"summary\": \"{{ $json.summary }}\",\n  \"location\": \"{{ $json.location }}\",\n  \"source\": \"{{ $json.source }}\",\n  \"clinic_phone\": \"{{ $env.DEMO_CLINIC_PHONE }}\"\n}"
+      },
+      "id": "node-sawt-high",
+      "name": "SAWT — High Priority Voice Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1300, 380]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/webhook/whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message\": \"{{ $json.summary }}\",\n  \"from\": \"{{ $json.from_number }}\"\n}"
+      },
+      "id": "node-herald-medium",
+      "name": "HERALD — WhatsApp Advice",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1300, 560]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8001/webhook/whatsapp",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"message\": \"{{ $json.summary }}\",\n  \"from\": \"{{ $json.from_number }}\"\n}"
+      },
+      "id": "node-herald-low",
+      "name": "HERALD — Low Priority Info",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1300, 740]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/calls",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type",  "value": "application/json" },
+            { "name": "Prefer",        "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"call_id\":     \"{{ $json.call_id }}\",\n  \"from_number\": \"{{ $json.from_number }}\",\n  \"intent\":      \"{{ $json.intent }}\",\n  \"urgency\":     \"{{ $json.urgency }}\",\n  \"transcript\":  \"{{ $json.summary }}\",\n  \"ai_summary\":  \"{{ $json.reasoning }}\",\n  \"outcome\":     \"{{ $json.urgency === 'EMERGENCY' || $json.urgency === 'HIGH' ? 'escalated' : 'resolved' }}\",\n  \"agent_used\":  \"NEXUS-LOOP-v3\"\n}"
+      },
+      "id": "node-supabase-log",
+      "name": "LEDGER — Log to Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 500]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.MAKE_WEBHOOK_URL }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"call_id\":   \"{{ $json.call_id }}\",\n  \"urgency\":   \"{{ $json.urgency }}\",\n  \"summary\":   \"{{ $json.summary }}\",\n  \"source\":    \"{{ $json.source }}\",\n  \"location\":  \"{{ $json.location }}\",\n  \"timestamp\": \"{{ $json.timestamp }}\"\n}"
+      },
+      "id": "node-make",
+      "name": "Make.com — Alert + Google Sheets",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1560, 700]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    status: 'processed',\n    call_id: $('Parse Intent + Merge').first().json.call_id,\n    urgency: $('Parse Intent + Merge').first().json.urgency,\n    loop_iteration: $('Parse Intent + Merge').first().json.loop_iteration,\n    message: 'NEXUS loop iteration complete',\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "node-respond",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1800, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}"
+      },
+      "id": "node-webhook-respond",
+      "name": "Return 200 OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [2000, 500]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "hours", "hoursInterval": 6 }]
+        }
+      },
+      "id": "node-loop-schedule",
+      "name": "⏰ Loop Trigger — Every 6 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [100, 900]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://qrng.anu.edu.au/API/jsonI.php?length=8&type=hex16",
+        "options": { "timeout": 8000 }
+      },
+      "id": "node-qrng",
+      "name": "HELIX — Fetch Quantum Seed (ANU QRNG)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [340, 900]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key",          "value": "={{ $env.ANTHROPIC_API_KEY }}" },
+            { "name": "anthropic-version",  "value": "2023-06-01" },
+            { "name": "Content-Type",       "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 400,\n  \"system\": \"You are BASIRA, the NEXUS community health prediction agent for Al Qua'a, UAE. Analyze patterns and output ONLY valid JSON: {\\\"week_prediction\\\": \\\"brief forecast\\\", \\\"high_risk_conditions\\\": [\\\"list\\\"], \\\"recommended_pre_positioning\\\": \\\"what clinic should prepare\\\", \\\"alert_level\\\": \\\"NORMAL|ELEVATED|HIGH\\\"}\",\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"Loop iteration {{ $runIndex }}. Quantum seed: {{ $json.data ? $json.data[0] : 'offline' }}. Generate weekly health demand forecast for Al Qua'a rural community.\"\n  }]\n}"
+      },
+      "id": "node-basira",
+      "name": "BASIRA — Community Health Prediction",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [580, 900]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "x-api-key",          "value": "={{ $env.ANTHROPIC_API_KEY }}" },
+            { "name": "anthropic-version",  "value": "2023-06-01" },
+            { "name": "Content-Type",       "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-6\",\n  \"max_tokens\": 200,\n  \"system\": \"You are MOSCA, the NEXUS quantum risk agent. Output ONLY valid JSON: {\\\"risk_level\\\": \\\"LOW|MEDIUM|HIGH|CRITICAL\\\", \\\"mosca_score\\\": number, \\\"action\\\": \\\"brief action\\\"}\",\n  \"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"Calculate current quantum security risk for Al Qua'a health data. Loop: {{ $runIndex }}\"\n  }]\n}"
+      },
+      "id": "node-mosca-loop",
+      "name": "MOSCA — Daily Risk Loop",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [820, 900]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.SUPABASE_URL }}/rest/v1/community_alerts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey",        "value": "={{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Authorization", "value": "=Bearer {{ $env.SUPABASE_SERVICE_KEY }}" },
+            { "name": "Content-Type",  "value": "application/json" },
+            { "name": "Prefer",        "value": "return=minimal" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"event_type\":       \"LOOP_HEALTH_CHECK\",\n  \"location\":         \"Al Qua'a, Al Ain, UAE\",\n  \"confidence\":       0.95,\n  \"response_action\":  \"BASIRA_FORECAST_COMPLETE\",\n  \"resolved\":         true\n}"
+      },
+      "id": "node-loop-log",
+      "name": "Log Loop Iteration to Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1060, 900]
+    }
+  ],
+  "connections": {
+    "Emergency Webhook Trigger": {
+      "main": [[{ "node": "Normalize Payload", "type": "main", "index": 0 }]]
+    },
+    "BASAR CV Alert Trigger": {
+      "main": [[{ "node": "Normalize Payload", "type": "main", "index": 0 }]]
+    },
+    "Normalize Payload": {
+      "main": [[{ "node": "ORACLE Intent Classifier (Claude)", "type": "main", "index": 0 }]]
+    },
+    "ORACLE Intent Classifier (Claude)": {
+      "main": [[{ "node": "Parse Intent + Merge", "type": "main", "index": 0 }]]
+    },
+    "Parse Intent + Merge": {
+      "main": [[{ "node": "Urgency Router (Switch)", "type": "main", "index": 0 }]]
+    },
+    "Urgency Router (Switch)": {
+      "main": [
+        [{ "node": "SAWT — Emergency Voice Call", "type": "main", "index": 0 }],
+        [{ "node": "SAWT — High Priority Voice Call", "type": "main", "index": 0 }],
+        [{ "node": "HERALD — WhatsApp Advice",    "type": "main", "index": 0 }],
+        [{ "node": "HERALD — Low Priority Info",   "type": "main", "index": 0 }]
+      ]
+    },
+    "SAWT — Emergency Voice Call":   { "main": [[{ "node": "LEDGER — Log to Supabase",     "type": "main", "index": 0 }]] },
+    "SAWT — High Priority Voice Call":{ "main": [[{ "node": "LEDGER — Log to Supabase",     "type": "main", "index": 0 }]] },
+    "HERALD — WhatsApp Advice":      { "main": [[{ "node": "LEDGER — Log to Supabase",     "type": "main", "index": 0 }]] },
+    "HERALD — Low Priority Info":    { "main": [[{ "node": "LEDGER — Log to Supabase",     "type": "main", "index": 0 }]] },
+    "LEDGER — Log to Supabase":      { "main": [[{ "node": "Make.com — Alert + Google Sheets","type": "main", "index": 0 }]] },
+    "Make.com — Alert + Google Sheets":{ "main": [[{ "node": "Respond to Webhook",          "type": "main", "index": 0 }]] },
+    "Respond to Webhook":            { "main": [[{ "node": "Return 200 OK",                 "type": "main", "index": 0 }]] },
+    "⏰ Loop Trigger — Every 6 Hours":{ "main": [[{ "node": "HELIX — Fetch Quantum Seed (ANU QRNG)", "type": "main", "index": 0 }]] },
+    "HELIX — Fetch Quantum Seed (ANU QRNG)":{ "main": [[{ "node": "BASIRA — Community Health Prediction", "type": "main", "index": 0 }]] },
+    "BASIRA — Community Health Prediction":{ "main": [[{ "node": "MOSCA — Daily Risk Loop",  "type": "main", "index": 0 }]] },
+    "MOSCA — Daily Risk Loop":       { "main": [[{ "node": "Log Loop Iteration to Supabase","type": "main", "index": 0 }]] }
+  },
+  "active": true,
+  "settings": { "executionOrder": "v1" },
+  "tags": [{ "name": "NEXUS" }, { "name": "Challenge2" }, { "name": "LoopEngineering" }]
+}

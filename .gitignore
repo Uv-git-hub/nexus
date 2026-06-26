@@ -1,0 +1,11 @@
+﻿.env
+__pycache__/
+*.pyc
+node_modules/
+.DS_Store
+incidents/
+quantum_seeds_cache.json
+venv/
+*.egg-info/
+dist/
+.vercel/
