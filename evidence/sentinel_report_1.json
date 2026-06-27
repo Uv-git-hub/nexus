@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-06-27T10:34:05.837250",
+  "iteration": 1,
+  "calls_analyzed": 0,
+  "threats_detected": [],
+  "env_security": [
+    {
+      "check": "ENV_FILE_EXISTS",
+      "status": "PASS",
+      "detail": ".env file found \u2014 secrets stored correctly"
+    },
+    {
+      "check": "ENV_IN_GITIGNORE",
+      "status": "PASS",
+      "detail": ".env excluded from git \u2014 secrets protected"
+    }
+  ],
+  "mosca_score": 100,
+  "risk_level": "LOW",
+  "ollama_used": false,
+  "ollama_analysis": null,
+  "recommendation": "System secure \u2705"
+}

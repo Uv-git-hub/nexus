@@ -1,0 +1,10 @@
+# ngrok.yml
+version: "2"
+authtoken: 77915477b21bf88bcae784393b7361c2
+tunnels:
+  herald:
+    addr: 8001
+    proto: http
+  sawt:
+    addr: 8002
+    proto: http
