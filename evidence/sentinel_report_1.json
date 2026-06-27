@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-27T12:26:43.488746",
+  "timestamp": "2026-06-27T14:40:17.674344+00:00",
   "iteration": 1,
   "calls_analyzed": 0,
   "threats_detected": [],
@@ -17,7 +17,5 @@
   ],
   "mosca_score": 100,
   "risk_level": "LOW",
-  "ollama_used": false,
-  "ollama_analysis": null,
   "recommendation": "System secure \u2705"
 }
