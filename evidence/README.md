@@ -68,7 +68,6 @@ PATH 2 — Camera (BASAR autonomous fall detection)
 |---|---|---|
 | **BASAR** (بصر) | Elderly person falls alone at 2 AM. No phone nearby. Nobody knows for hours. BASAR watches 24/7 and alerts the clinic within 10 seconds — zero human trigger. | YOLOv8n-pose, OpenCV |
 | **ORACLE** | A coordinator cannot assess severity quickly. Is this a cold or a stroke? ORACLE classifies every input as LOW/MEDIUM/HIGH/EMERGENCY in under 2 seconds, in Arabic or English. | Claude claude-sonnet-4-6 |
-| **BASIRA** | The clinic has no idea how many patients to expect next week. BASIRA runs every 6 hours, analyses alert history, and predicts weekly health demand so the clinic can pre-position staff and supplies. | Claude (scheduled loop) |
 | **SENTINEL** | Patient data (names, phones, medical summaries) flows through multiple services with nobody monitoring for breaches. SENTINEL scans every 5 minutes and scores risk with a MOSCA Score (0–100). 100% offline, no API key needed. | Rule-based detection |
 
 ---
@@ -96,19 +95,13 @@ Rule-based threat detection runs offline with no API keys.
 
 **Evidence:** `evidence/sentinel_report_1.json` — MOSCA Score 100, Risk LOW, System secure.
 
-### Claim 5: BASIRA predicts 7-day health demand autonomously
-Claude generates community-specific forecasts every 6 hours.
-
-**Evidence:** `evidence/basira_prediction_*.json` — saved prediction with daily demand levels.
-
-### Claim 6: Full deployment costs AED 0
+### Claim 5: Full deployment costs AED 0
 Every component runs on a permanently free tier.
 
 **Evidence:** `evidence/cost_breakdown.md` — screenshots of all free-tier dashboards.
 
 ### Honest Limitations
 - YOLOv8 fall detection uses head-below-hip ratio — not clinically validated, a practical real-time approximation
-- BASIRA predictions are pattern-based, not population-level medical data
 - Make.com free tier allows 1,000 operations/month — sufficient for pilot, upgrade path exists
 
 ---
@@ -207,12 +200,6 @@ python agents\sentinel_agent.py --once
 # Output: MOSCA Score: 100/100 | Risk: LOW | System secure ✅
 ```
 
-### Test 4 — BASIRA health prediction
-```powershell
-python agents\basira_agent.py --once
-# Output: 7-day demand forecast saved to evidence/
-```
-
 ### Run all agents simultaneously
 ```powershell
 # Terminal 1
@@ -220,9 +207,6 @@ python agents\basar_agent.py
 
 # Terminal 2
 python agents\sentinel_agent.py
-
-# Terminal 3
-python agents\basira_agent.py
 
 # Terminal 4
 node backend\server.js
@@ -250,8 +234,6 @@ LOOP 1 — Emergency Response (event-driven, <10 seconds)
 LOOP 2 — Health Prediction (every 6 hours, autonomous)
 ──────────────────────────────────────────────────────
   Schedule trigger
-       ↓
-  [BASIRA/Claude] 7-day demand forecast for Al Qua'a
        ↓
   [SENTINEL] MOSCA security scan
        ↓
