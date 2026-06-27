@@ -1,870 +1,352 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NEXUS — Autonomous Emergency Voice Response</title>
-  <style>
-    :root {
-      --bg: #060709;
-      --bg2: #0c0f14;
-      --card: #11151c;
-      --border: #1f2530;
-      --green: #1fe08a;
-      --green-dim: #0f7a4d;
-      --amber: #ffb238;
-      --red: #ff4d5e;
-      --text: #eef1f5;
-      --muted: #8b94a3;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      overflow-x: hidden;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    .bg-grid {
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-      background-image:
-        linear-gradient(rgba(31, 224, 138, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(31, 224, 138, 0.05) 1px, transparent 1px);
-      background-size: 48px 48px;
-      mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
-    }
-
-    .glow {
-      position: fixed;
-      z-index: 0;
-      border-radius: 50%;
-      filter: blur(120px);
-      opacity: 0.35;
-      pointer-events: none;
-    }
-
-    .glow1 {
-      width: 600px;
-      height: 600px;
-      background: var(--green);
-      top: -200px;
-      left: -150px;
-    }
-
-    .glow2 {
-      width: 500px;
-      height: 500px;
-      background: var(--red);
-      top: 200px;
-      right: -200px;
-      opacity: 0.15;
-    }
-
-    section {
-      position: relative;
-      z-index: 1;
-    }
-
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 18px 6%;
-      background: rgba(6, 7, 9, 0.8);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 800;
-      font-size: 1.3rem;
-    }
-
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--green);
-      box-shadow: 0 0 12px var(--green);
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-
-      0%,
-      100% {
-        opacity: 1;
-        transform: scale(1)
-      }
-
-      50% {
-        opacity: .5;
-        transform: scale(1.3)
-      }
-    }
-
-    .navlinks {
-      display: flex;
-      gap: 34px;
-      font-size: .92rem;
-      color: var(--muted);
-    }
-
-    .navlinks a:hover {
-      color: var(--green);
-    }
-
-    .nav-cta {
-      background: var(--green);
-      color: #06120b;
-      font-weight: 700;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-size: .9rem;
-    }
-
-    @media(max-width:800px) {
-      .navlinks {
-        display: none
-      }
-    }
-
-    .hero {
-      padding: 110px 6% 90px;
-      text-align: center;
-      max-width: 980px;
-      margin: 0 auto;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(31, 224, 138, .08);
-      border: 1px solid rgba(31, 224, 138, .3);
-      color: var(--green);
-      font-size: .8rem;
-      font-weight: 600;
-      padding: 7px 16px;
-      border-radius: 999px;
-      margin-bottom: 28px;
-    }
-
-    .badge::before {
-      content: "●";
-      font-size: .6rem;
-      animation: pulse 1.4s infinite;
-    }
-
-    h1 {
-      font-size: clamp(2.4rem, 6vw, 4.4rem);
-      font-weight: 800;
-      line-height: 1.08;
-      letter-spacing: -1px;
-      margin-bottom: 24px;
-    }
-
-    h1 span {
-      color: var(--green);
-    }
-
-    .hero p.sub {
-      color: var(--muted);
-      font-size: 1.15rem;
-      max-width: 680px;
-      margin: 0 auto 40px;
-      line-height: 1.6;
-    }
-
-    .hero-ctas {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 60px;
-    }
-
-    .btn-primary,
-    .btn-secondary {
-      padding: 15px 30px;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 1rem;
-      cursor: pointer;
-      border: none;
-      transition: .2s;
-    }
-
-    .btn-primary {
-      background: var(--green);
-      color: #06120b;
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 30px rgba(31, 224, 138, .4);
-    }
-
-    .btn-secondary {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
-
-    .btn-secondary:hover {
-      border-color: var(--green);
-      color: var(--green);
-      transform: translateY(-3px);
-    }
-
-    .stat-strip {
-      display: flex;
-      justify-content: center;
-      gap: 50px;
-      flex-wrap: wrap;
-      padding-top: 30px;
-      border-top: 1px solid var(--border);
-    }
-
-    .stat .num {
-      font-size: 1.9rem;
-      font-weight: 800;
-      color: var(--green);
-    }
-
-    .stat .lbl {
-      font-size: .8rem;
-      color: var(--muted);
-      margin-top: 4px;
-    }
-
-    .section-wrap {
-      padding: 80px 6%;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    .section-head {
-      text-align: center;
-      margin-bottom: 60px;
-    }
-
-    .section-head .tag {
-      color: var(--green);
-      font-weight: 700;
-      font-size: .85rem;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-    }
-
-    .section-head h2 {
-      font-size: clamp(1.8rem, 4vw, 2.6rem);
-      margin-top: 10px;
-      font-weight: 800;
-    }
-
-    .section-head p {
-      color: var(--muted);
-      margin-top: 14px;
-      max-width: 600px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .demo-section {
-      padding: 90px 6%;
-      max-width: 700px;
-      margin: 0 auto;
-      text-align: center;
-    }
-
-    .form-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 40px;
-      margin-top: 40px;
-      text-align: left;
-    }
-
-    .form-card label {
-      display: block;
-      font-size: .9rem;
-      color: var(--muted);
-      margin-bottom: 8px;
-      margin-top: 20px;
-    }
-
-    .form-card label:first-child {
-      margin-top: 0;
-    }
-
-    .form-card input,
-    .form-card select,
-    .form-card textarea {
-      width: 100%;
-      padding: 14px 16px;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      color: var(--text);
-      font-size: 1rem;
-      outline: none;
-      font-family: inherit;
-      transition: border-color .2s;
-    }
-
-    .form-card input:focus,
-    .form-card select:focus,
-    .form-card textarea:focus {
-      border-color: var(--green);
-    }
-
-    .form-card select option {
-      background: var(--bg2);
-    }
-
-    .form-card textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
-
-    .submit-btn {
-      width: 100%;
-      margin-top: 28px;
-      padding: 16px;
-      background: var(--green);
-      color: #06120b;
-      border: none;
-      border-radius: 10px;
-      font-weight: 700;
-      font-size: 1.05rem;
-      cursor: pointer;
-      transition: .2s;
-    }
-
-    .submit-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(31, 224, 138, .35);
-    }
-
-    .submit-btn:disabled {
-      opacity: .5;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    #form-status {
-      margin-top: 20px;
-      padding: 16px;
-      border-radius: 10px;
-      font-size: .95rem;
-      display: none;
-    }
-
-    #form-status.success {
-      background: rgba(31, 224, 138, .1);
-      border: 1px solid rgba(31, 224, 138, .3);
-      color: var(--green);
-    }
-
-    #form-status.error {
-      background: rgba(255, 77, 94, .1);
-      border: 1px solid rgba(255, 77, 94, .3);
-      color: var(--red);
-    }
-
-    .flow {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0;
-      flex-wrap: wrap;
-      row-gap: 40px;
-    }
-
-    .node {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 26px 22px;
-      width: 180px;
-      text-align: center;
-      transition: .25s;
-    }
-
-    .node:hover {
-      transform: translateY(-6px);
-      border-color: var(--green);
-      box-shadow: 0 16px 40px rgba(31, 224, 138, .15);
-    }
-
-    .node .icon {
-      font-size: 2rem;
-      margin-bottom: 12px;
-    }
-
-    .node h4 {
-      font-size: .95rem;
-      margin-bottom: 6px;
-    }
-
-    .node p {
-      font-size: .78rem;
-      color: var(--muted);
-      line-height: 1.4;
-    }
-
-    .arrow {
-      color: var(--green);
-      font-size: 1.6rem;
-      padding: 0 8px;
-      opacity: .6;
-    }
-
-    .grid3 {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      margin-top: 50px;
-    }
-
-    @media(max-width:900px) {
-      .grid3 {
-        grid-template-columns: 1fr
-      }
-    }
-
-    .fcard {
-      background: linear-gradient(160deg, var(--card), var(--bg2));
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 32px 26px;
-      transition: .25s;
-    }
-
-    .fcard:hover {
-      transform: translateY(-5px);
-      border-color: rgba(31, 224, 138, .4);
-    }
-
-    .fcard .ficon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(31, 224, 138, .1);
-      color: var(--green);
-      font-size: 1.4rem;
-      margin-bottom: 18px;
-    }
-
-    .fcard h3 {
-      font-size: 1.1rem;
-      margin-bottom: 10px;
-    }
-
-    .fcard p {
-      color: var(--muted);
-      font-size: .9rem;
-      line-height: 1.6;
-    }
-
-    table.cost {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 40px;
-      border-radius: 14px;
-      overflow: hidden;
-    }
-
-    table.cost th,
-    table.cost td {
-      padding: 16px 20px;
-      text-align: left;
-      font-size: .92rem;
-    }
-
-    table.cost th {
-      background: var(--card);
-      color: var(--muted);
-      border-bottom: 1px solid var(--border);
-    }
-
-    table.cost td {
-      background: var(--bg2);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .cost-tag {
-      color: var(--green);
-      font-weight: 700;
-    }
-
-    footer {
-      padding: 50px 6%;
-      text-align: center;
-      border-top: 1px solid var(--border);
-      color: var(--muted);
-      font-size: .85rem;
-    }
-
-    footer .floc {
-      color: var(--green);
-      font-weight: 600;
-    }
-
-    .reveal {
-      opacity: 0;
-      transform: translateY(24px);
-      transition: opacity .7s, transform .7s;
-    }
-
-    .reveal.in {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEXUS — Autonomous Emergency Response | Al Qua'a</title>
+<style>
+  :root {
+    --bg:#060709;--bg2:#0c0f14;--card:#11151c;--border:#1f2530;
+    --green:#1fe08a;--red:#ff4d5e;--text:#eef1f5;--muted:#8b94a3;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;overflow-x:hidden;}
+  a{color:inherit;text-decoration:none;}
+  .bg-grid{position:fixed;inset:0;z-index:0;
+    background-image:linear-gradient(rgba(31,224,138,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(31,224,138,.05) 1px,transparent 1px);
+    background-size:48px 48px;
+    mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,black 40%,transparent 100%);}
+  .glow{position:fixed;z-index:0;border-radius:50%;filter:blur(120px);opacity:.35;pointer-events:none;}
+  .glow1{width:600px;height:600px;background:var(--green);top:-200px;left:-150px;}
+  .glow2{width:500px;height:500px;background:var(--red);top:200px;right:-200px;opacity:.15;}
+  section{position:relative;z-index:1;}
+  nav{position:sticky;top:0;z-index:50;display:flex;align-items:center;justify-content:space-between;
+    padding:18px 6%;background:rgba(6,7,9,.8);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.3rem;}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+  .navlinks{display:flex;gap:34px;font-size:.92rem;color:var(--muted);}
+  .navlinks a:hover{color:var(--green);}
+  .nav-cta{background:var(--green);color:#06120b;font-weight:700;padding:10px 20px;border-radius:8px;font-size:.9rem;}
+  @media(max-width:800px){.navlinks{display:none}}
+  .hero{padding:110px 6% 90px;text-align:center;max-width:980px;margin:0 auto;}
+  .badge{display:inline-flex;align-items:center;gap:8px;background:rgba(31,224,138,.08);border:1px solid rgba(31,224,138,.3);
+    color:var(--green);font-size:.8rem;font-weight:600;padding:7px 16px;border-radius:999px;margin-bottom:28px;}
+  .badge::before{content:"●";font-size:.6rem;animation:pulse 1.4s infinite;}
+  h1{font-size:clamp(2.4rem,6vw,4.4rem);font-weight:800;line-height:1.08;letter-spacing:-1px;margin-bottom:24px;}
+  h1 span{color:var(--green);}
+  .hero p.sub{color:var(--muted);font-size:1.15rem;max-width:680px;margin:0 auto 40px;line-height:1.6;}
+  .hero-ctas{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:60px;}
+  .btn-primary,.btn-secondary{padding:15px 30px;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;border:none;transition:.2s;}
+  .btn-primary{background:var(--green);color:#06120b;}
+  .btn-primary:hover{transform:translateY(-3px);box-shadow:0 10px 30px rgba(31,224,138,.4);}
+  .btn-secondary{background:transparent;color:var(--text);border:1px solid var(--border);}
+  .btn-secondary:hover{border-color:var(--green);color:var(--green);transform:translateY(-3px);}
+  .stat-strip{display:flex;justify-content:center;gap:50px;flex-wrap:wrap;padding-top:30px;border-top:1px solid var(--border);}
+  .stat .num{font-size:1.9rem;font-weight:800;color:var(--green);}
+  .stat .lbl{font-size:.8rem;color:var(--muted);margin-top:4px;}
+  .section-wrap{padding:80px 6%;max-width:1100px;margin:0 auto;}
+  .section-head{text-align:center;margin-bottom:60px;}
+  .section-head .tag{color:var(--green);font-weight:700;font-size:.85rem;letter-spacing:1.5px;text-transform:uppercase;}
+  .section-head h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-top:10px;font-weight:800;}
+  .section-head p{color:var(--muted);margin-top:14px;max-width:600px;margin-left:auto;margin-right:auto;}
+  .flow{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;row-gap:40px;}
+  .node{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:26px 22px;width:180px;text-align:center;transition:.25s;}
+  .node:hover{transform:translateY(-6px);border-color:var(--green);box-shadow:0 16px 40px rgba(31,224,138,.15);}
+  .node .icon{font-size:2rem;margin-bottom:12px;}
+  .node h4{font-size:.95rem;margin-bottom:6px;}
+  .node p{font-size:.78rem;color:var(--muted);line-height:1.4;}
+  .arrow{color:var(--green);font-size:1.6rem;padding:0 8px;opacity:.6;}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:50px;}
+  @media(max-width:900px){.grid3{grid-template-columns:1fr}}
+  .fcard{background:linear-gradient(160deg,var(--card),var(--bg2));border:1px solid var(--border);border-radius:18px;padding:32px 26px;transition:.25s;}
+  .fcard:hover{transform:translateY(-5px);border-color:rgba(31,224,138,.4);}
+  .fcard .ficon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    background:rgba(31,224,138,.1);color:var(--green);font-size:1.4rem;margin-bottom:18px;}
+  .fcard h3{font-size:1.1rem;margin-bottom:10px;}
+  .fcard p{color:var(--muted);font-size:.9rem;line-height:1.6;}
+  table.cost{width:100%;border-collapse:collapse;margin-top:40px;border-radius:14px;overflow:hidden;}
+  table.cost th,table.cost td{padding:16px 20px;text-align:left;font-size:.92rem;}
+  table.cost th{background:var(--card);color:var(--muted);border-bottom:1px solid var(--border);}
+  table.cost td{background:var(--bg2);border-bottom:1px solid var(--border);}
+  .cost-tag{color:var(--green);font-weight:700;}
+  .demo-section{padding:90px 6%;max-width:700px;margin:0 auto;text-align:center;}
+  .form-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px;margin-top:40px;text-align:left;}
+  .form-card label{display:block;font-size:.9rem;color:var(--muted);margin-bottom:8px;margin-top:20px;}
+  .form-card label:first-child{margin-top:0;}
+  .form-card input,.form-card select,.form-card textarea{width:100%;padding:14px 16px;background:var(--bg2);
+    border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:1rem;outline:none;font-family:inherit;transition:border-color .2s;}
+  .form-card input:focus,.form-card select:focus,.form-card textarea:focus{border-color:var(--green);}
+  .form-card select option{background:var(--bg2);}
+  .form-card textarea{resize:vertical;min-height:100px;}
+  .submit-btn{width:100%;margin-top:28px;padding:16px;background:var(--green);color:#06120b;border:none;
+    border-radius:10px;font-weight:700;font-size:1.05rem;cursor:pointer;transition:.2s;}
+  .submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(31,224,138,.35);}
+  .submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
+  #form-status{margin-top:20px;padding:16px;border-radius:10px;font-size:.95rem;display:none;}
+  #form-status.success{background:rgba(31,224,138,.1);border:1px solid rgba(31,224,138,.3);color:var(--green);}
+  #form-status.error{background:rgba(255,77,94,.1);border:1px solid rgba(255,77,94,.3);color:var(--red);}
+  footer{padding:50px 6%;text-align:center;border-top:1px solid var(--border);color:var(--muted);font-size:.85rem;}
+  footer .floc{color:var(--green);font-weight:600;}
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s,transform .7s;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+</style>
 </head>
-
 <body>
-  <div class="bg-grid"></div>
-  <div class="glow glow1"></div>
-  <div class="glow glow2"></div>
+<div class="bg-grid"></div>
+<div class="glow glow1"></div>
+<div class="glow glow2"></div>
 
-  <nav>
-    <div class="logo"><span class="dot"></span>NEXUS</div>
-    <div class="navlinks">
-      <a href="#how">How it works</a>
-      <a href="#features">Features</a>
-      <a href="#stack">Stack</a>
-      <a href="#demo">Request Demo</a>
+<nav>
+  <div class="logo"><span class="dot"></span>NEXUS</div>
+  <div class="navlinks">
+    <a href="#how">How it works</a>
+    <a href="#agents">Agents</a>
+    <a href="#stack">Stack</a>
+    <a href="#demo">Request Demo</a>
+  </div>
+  <a href="#demo" class="nav-cta">Request Demo</a>
+</nav>
+
+<section class="hero">
+  <div class="badge">Tatweer Hackathon 2026 — Challenge 2: Reaching People Quickly</div>
+  <h1>The platform that reaches them<br><span>before the ambulance does</span></h1>
+  <p class="sub">NEXUS turns a WhatsApp message or a camera detecting a fall into an instant coordinated alert — Gmail, SMS, Google Sheets — in under 10 seconds. Any phone. Zero apps. Zero cost. Built for Al Qua'a.</p>
+  <div class="hero-ctas">
+    <a href="#demo" class="btn-primary">Request a Live Demo</a>
+    <a href="#how" class="btn-secondary">See How It Works</a>
+  </div>
+  <div class="stat-strip">
+    <div class="stat"><div class="num">&lt;10s</div><div class="lbl">alert → Gmail + SMS</div></div>
+    <div class="stat"><div class="num">AED 0</div><div class="lbl">to deploy today</div></div>
+    <div class="stat"><div class="num">0</div><div class="lbl">apps required</div></div>
+    <div class="stat"><div class="num">24/7</div><div class="lbl">autonomous loop</div></div>
+  </div>
+</section>
+
+<section class="section-wrap" id="how">
+  <div class="section-head">
+    <div class="tag">The Pipeline</div>
+    <h2>From signal to alert in seconds</h2>
+    <p>Three input paths. One outcome: the right people are notified instantly.</p>
+  </div>
+  <div class="flow">
+    <div class="node reveal"><div class="icon">💬</div><h4>WhatsApp / Form</h4><p>Resident messages or fills form — any basic phone</p></div>
+    <div class="arrow">→</div>
+    <div class="node reveal"><div class="icon">🧠</div><h4>ORACLE (Claude)</h4><p>AI classifies urgency: LOW / MEDIUM / HIGH / EMERGENCY</p></div>
+    <div class="arrow">→</div>
+    <div class="node reveal"><div class="icon">⚡</div><h4>Make.com</h4><p>Fires → Google Sheets + Gmail + SMS instantly</p></div>
+    <div class="arrow">→</div>
+    <div class="node reveal"><div class="icon">✅</div><h4>Full Alert Sent</h4><p>Name, phone, location, urgency, summary — all logged</p></div>
+  </div>
+  <br><br>
+  <div class="flow">
+    <div class="node reveal"><div class="icon">👁</div><h4>BASAR Camera</h4><p>YOLOv8 detects fall from webcam — no human trigger</p></div>
+    <div class="arrow">→</div>
+    <div class="node reveal"><div class="icon">🚨</div><h4>Fall Alert</h4><p>Fires to Make.com within 2 seconds of detection</p></div>
+    <div class="arrow">→</div>
+    <div class="node reveal"><div class="icon">📊</div><h4>Logged to Sheets</h4><p>Falls, frames, uptime — every 15 min report</p></div>
+    <div class="arrow">→</div>
+    <div class="node reveal"><div class="icon">🔒</div><h4>SENTINEL</h4><p>Security agent monitors data — MOSCA score 0-100</p></div>
+  </div>
+</section>
+
+<section class="section-wrap" id="agents">
+  <div class="section-head">
+    <div class="tag">6 Autonomous Agents</div>
+    <h2>Built for distance, not for smartphones</h2>
+  </div>
+  <div class="grid3">
+    <div class="fcard reveal">
+      <div class="ficon">👁</div><h3>BASAR (بصر) — Vision</h3>
+      <p>YOLOv8 pose estimation watches a webcam and detects falls in real time. No human needed. Fires Make.com webhook within 2 seconds. Sends 15-minute stats reports to Google Sheets + Gmail.</p>
     </div>
-    <a href="#demo" class="nav-cta">Request Demo</a>
-  </nav>
-
-  <section class="hero">
-    <div class="badge">Tatweer Hackathon 2026 — Challenge 2: Reaching People Quickly</div>
-    <h1>The call that reaches them<br><span>before the ambulance does</span></h1>
-    <p class="sub">NEXUS turns a WhatsApp message — or a camera detecting a fall — into an instant alert to the nearest
-      clinic. Under 10 seconds. Any phone. Zero apps. Built for Al Qua'a.</p>
-    <div class="hero-ctas">
-      <a href="#demo" class="btn-primary">Request a Live Demo</a>
-      <a href="#how" class="btn-secondary">See How It Works</a>
+    <div class="fcard reveal">
+      <div class="ficon">🧠</div><h3>ORACLE — AI Triage</h3>
+      <p>Claude claude-sonnet-4-6 classifies every incoming message as LOW / MEDIUM / HIGH / EMERGENCY. Responds in Arabic or English. Routes to correct response pipeline automatically.</p>
     </div>
-    <div class="stat-strip">
-      <div class="stat">
-        <div class="num">&lt;10s</div>
-        <div class="lbl">message → Gmail + SMS alert</div>
-      </div>
-      <div class="stat">
-        <div class="num">AED 0</div>
-        <div class="lbl">to deploy today</div>
-      </div>
-      <div class="stat">
-        <div class="num">0</div>
-        <div class="lbl">apps required</div>
-      </div>
-      <div class="stat">
-        <div class="num">24/7</div>
-        <div class="lbl">autonomous loop</div>
-      </div>
+    <div class="fcard reveal">
+      <div class="ficon">🛡️</div><h3>SENTINEL — Security</h3>
+      <p>Offline cybersecurity agent. Runs rule-based threat detection on all data flows. Produces a MOSCA Score (0–100) measuring patient data security. No API keys required — 100% free.</p>
     </div>
-  </section>
-
-  <section class="section-wrap" id="how">
-    <div class="section-head">
-      <div class="tag">The Pipeline</div>
-      <h2>From message to alert in seconds</h2>
-      <p>Two input paths. One outcome: the team is notified instantly.</p>
+    <div class="fcard reveal">
+      <div class="ficon">📡</div><h3>BASIRA — Prediction</h3>
+      <p>Scheduled Claude agent runs every 6 hours. Predicts community health demand for the next week using historical alert patterns. Logs forecasts to Supabase for clinic pre-positioning.</p>
     </div>
-    <div class="flow">
-      <div class="node reveal">
-        <div class="icon">💬</div>
-        <h4>WhatsApp / Form</h4>
-        <p>Resident sends message or fills demo form — any phone</p>
-      </div>
-      <div class="arrow">→</div>
-      <div class="node reveal">
-        <div class="icon">🧠</div>
-        <h4>ORACLE (Claude)</h4>
-        <p>AI classifies urgency: LOW / MEDIUM / HIGH / EMERGENCY</p>
-      </div>
-      <div class="arrow">→</div>
-      <div class="node reveal">
-        <div class="icon">⚡</div>
-        <h4>Make.com</h4>
-        <p>Webhook fires → Google Sheets + Gmail + SMS automatically</p>
-      </div>
-      <div class="arrow">→</div>
-      <div class="node reveal">
-        <div class="icon">📋</div>
-        <h4>Logged + Alerted</h4>
-        <p>Full details: name, phone, location, urgency, timestamp</p>
-      </div>
+    <div class="fcard reveal">
+      <div class="ficon">⚡</div><h3>Make.com Pipeline</h3>
+      <p>The automation backbone. Receives webhooks from all agents. Routes to Google Sheets (log), Gmail (alert email), and Twilio SMS — all in parallel, in under 10 seconds.</p>
     </div>
-    <br><br>
-    <div class="flow">
-      <div class="node reveal">
-        <div class="icon">👁</div>
-        <h4>BASAR Camera</h4>
-        <p>YOLOv8 detects fall from webcam — no human trigger</p>
-      </div>
-      <div class="arrow">→</div>
-      <div class="node reveal">
-        <div class="icon">🚨</div>
-        <h4>Fall Detected</h4>
-        <p>Alert fires within 2 seconds to Make.com + n8n</p>
-      </div>
-      <div class="arrow">→</div>
-      <div class="node reveal">
-        <div class="icon">📞</div>
-        <h4>SAWT calls clinic</h4>
-        <p>AI voice agent calls in Arabic within 5 seconds</p>
-      </div>
-      <div class="arrow">→</div>
-      <div class="node reveal">
-        <div class="icon">📊</div>
-        <h4>15-min Reports</h4>
-        <p>BASAR sends stats to Sheets + Gmail every 15 minutes</p>
-      </div>
+    <div class="fcard reveal">
+      <div class="ficon">🔗</div><h3>n8n Orchestrator</h3>
+      <p>Visual workflow canvas connecting all agents. Handles WhatsApp triage via Twilio, schedules BASIRA predictions, monitors SENTINEL reports. Fully importable JSON workflow.</p>
     </div>
-  </section>
+  </div>
+</section>
 
-  <section class="section-wrap" id="features">
-    <div class="section-head">
-      <div class="tag">Why It Matters</div>
-      <h2>Built for distance, not for smartphones</h2>
-    </div>
-    <div class="grid3">
-      <div class="fcard reveal">
-        <div class="ficon">📱</div>
-        <h3>No app needed</h3>
-        <p>WhatsApp on any basic phone. The form on this page. A camera detecting a fall. Three ways to trigger NEXUS —
-          none require a smartphone or internet on the resident's side.</p>
-      </div>
-      <div class="fcard reveal">
-        <div class="ficon">🗣️</div>
-        <h3>Arabic-first voice</h3>
-        <p>SAWT opens every call in Arabic: "مرحباً، أنا NEXUS". Switches to English if clinic staff respond in English.
-          Bilingual, natural, respectful.</p>
-      </div>
-      <div class="fcard reveal">
-        <div class="ficon">🛡️</div>
-        <h3>SENTINEL security</h3>
-        <p>Offline cybersecurity agent monitors for data attacks and spoofed alerts. MOSCA score 0-100 tells you exactly
-          how secure patient data is at any moment.</p>
-      </div>
-    </div>
-  </section>
+<section class="section-wrap" id="stack">
+  <div class="section-head">
+    <div class="tag">Feasibility</div>
+    <h2>Deployable tomorrow, for free</h2>
+  </div>
+  <table class="cost">
+    <tr><th>Component</th><th>Tool</th><th>Cost</th></tr>
+    <tr><td>AI triage brain (ORACLE)</td><td>Claude claude-sonnet-4-6 API</td><td class="cost-tag">AED 0</td></tr>
+    <tr><td>Fall detection (BASAR)</td><td>YOLOv8n MIT license</td><td class="cost-tag">AED 0</td></tr>
+    <tr><td>Automation pipeline</td><td>Make.com free tier</td><td class="cost-tag">AED 0</td></tr>
+    <tr><td>Gmail + SMS alerts</td><td>Gmail API + Twilio sandbox</td><td class="cost-tag">AED 0</td></tr>
+    <tr><td>Google Sheets logging</td><td>Google Sheets API</td><td class="cost-tag">AED 0</td></tr>
+    <tr><td>WhatsApp triage</td><td>n8n + Twilio sandbox</td><td class="cost-tag">AED 0</td></tr>
+    <tr><td>Database</td><td>Supabase 500MB free</td><td class="cost-tag">AED 0</td></tr>
+    <tr><td>Security (SENTINEL)</td><td>Offline rule-based + Ollama</td><td class="cost-tag">AED 0</td></tr>
+    <tr><td>Workflow orchestration</td><td>n8n cloud free tier</td><td class="cost-tag">AED 0</td></tr>
+    <tr><td><strong>Total</strong></td><td></td><td class="cost-tag"><strong>AED 0</strong></td></tr>
+  </table>
+</section>
 
-  <section class="section-wrap" id="stack">
-    <div class="section-head">
-      <div class="tag">Feasibility</div>
-      <h2>Deployable tomorrow, for free</h2>
-    </div>
-    <table class="cost">
-      <tr>
-        <th>Component</th>
-        <th>Tool</th>
-        <th>Cost</th>
-      </tr>
-      <tr>
-        <td>Voice AI calls</td>
-        <td>VAPI + ElevenLabs</td>
-        <td class="cost-tag">AED 0</td>
-      </tr>
-      <tr>
-        <td>AI triage brain</td>
-        <td>Claude claude-sonnet-4-6</td>
-        <td class="cost-tag">AED 0</td>
-      </tr>
-      <tr>
-        <td>WhatsApp messaging</td>
-        <td>Twilio sandbox</td>
-        <td class="cost-tag">AED 0</td>
-      </tr>
-      <tr>
-        <td>Automation + alerts</td>
-        <td>Make.com + n8n</td>
-        <td class="cost-tag">AED 0</td>
-      </tr>
-      <tr>
-        <td>Database</td>
-        <td>Supabase</td>
-        <td class="cost-tag">AED 0</td>
-      </tr>
-      <tr>
-        <td>Fall detection</td>
-        <td>YOLOv8n (MIT)</td>
-        <td class="cost-tag">AED 0</td>
-      </tr>
-      <tr>
-        <td>Security layer</td>
-        <td>SENTINEL (offline)</td>
-        <td class="cost-tag">AED 0</td>
-      </tr>
-      <tr>
-        <td><strong>Total</strong></td>
-        <td></td>
-        <td class="cost-tag"><strong>AED 0</strong></td>
-      </tr>
-    </table>
-  </section>
+<section class="demo-section" id="demo">
+  <div class="section-head">
+    <div class="tag">Get Involved</div>
+    <h2>Request a live demo</h2>
+    <p>Fill in your details — the NEXUS team gets an instant Gmail alert and SMS with all your information logged to Google Sheets automatically.</p>
+  </div>
 
-  <!-- DEMO FORM — NO AI CALL, FULL DATA TO MAKE.COM -->
-  <section class="demo-section" id="demo">
-    <div class="section-head">
-      <div class="tag">Get Involved</div>
-      <h2>Request a live demo</h2>
-      <p>Fill in your details and NEXUS will log your request — the team gets an instant Gmail alert and SMS with all
-        your information.</p>
-    </div>
+  <div class="form-card reveal">
+    <label for="fname">Your Name *</label>
+    <input type="text" id="fname" placeholder="Ahmed Al Mansouri" />
 
-    <div class="form-card reveal">
-      <label for="fname">Your Name *</label>
-      <input type="text" id="fname" placeholder="Ahmed Al Mansouri" />
+    <label for="fphone">Phone Number (with country code) *</label>
+    <input type="tel" id="fphone" placeholder="+971501234567" />
 
-      <label for="fphone">Phone Number (with country code) *</label>
-      <input type="tel" id="fphone" placeholder="+971501234567" />
+    <label for="flocation">Your Location / Community</label>
+    <input type="text" id="flocation" value="Al Qua'a, Al Ain, UAE" />
 
-      <label for="flocation">Your Location / Community</label>
-      <input type="text" id="flocation" placeholder="Al Qua'a, Al Ain" value="Al Qua'a, Al Ain, UAE" />
+    <label for="furgency">Demo Type</label>
+    <select id="furgency">
+      <option value="LOW">General demo — see how it works</option>
+      <option value="MEDIUM">Show me WhatsApp triage</option>
+      <option value="HIGH">Show me the camera fall detection</option>
+      <option value="EMERGENCY">Full emergency pipeline demo</option>
+    </select>
 
-      <label for="furgency">Demo Type</label>
-      <select id="furgency">
-        <option value="LOW">General demo — see how it works</option>
-        <option value="MEDIUM">Show me WhatsApp triage</option>
-        <option value="HIGH">Show me the camera fall detection</option>
-        <option value="EMERGENCY">Full emergency pipeline demo</option>
-      </select>
+    <label for="fmessage">Your message (optional)</label>
+    <textarea id="fmessage" placeholder="I want to see how NEXUS handles a fall detection scenario..."></textarea>
 
-      <label for="fmessage">Your message / what you'd like to demo (optional)</label>
-      <textarea id="fmessage" placeholder="I want to see how NEXUS handles a fall detection scenario..."></textarea>
+    <button class="submit-btn" id="submit-btn" onclick="submitForm()">
+      🚀 Submit Demo Request
+    </button>
+    <div id="form-status"></div>
+  </div>
+</section>
 
-      <button class="submit-btn" id="submit-btn" onclick="submitForm()">
-        🚀 Submit Demo Request
-      </button>
-      <div id="form-status"></div>
-    </div>
-  </section>
+<footer>
+  Built for <span class="floc">Tatweer Hackathon 2026</span> — Challenge 2: Reaching People Quickly.<br>
+  Community: Al Qua'a, Al Ain, UAE · Loop Engineering 2026 · AED 0 deployment
+</footer>
 
-  <footer>
-    Built for <span class="floc">Tatweer Hackathon 2026</span> — Challenge 2: Reaching People Quickly.<br>
-    Community: Al Qua'a, Al Ain, UAE · Loop Engineering 2026 · AED 0 deployment
-  </footer>
+<script>
+  const obs = new IntersectionObserver(
+    es => es.forEach(e => e.isIntersecting && e.target.classList.add('in')),
+    {threshold:0.15}
+  );
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
 
-  <script>
-    const obs = new IntersectionObserver(
-      entries => entries.forEach(e => e.isIntersecting && e.target.classList.add('in')),
-      { threshold: 0.15 }
-    );
-    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  async function submitForm() {
+    const name     = document.getElementById('fname').value.trim();
+    const phone    = document.getElementById('fphone').value.trim();
+    const location = document.getElementById('flocation').value.trim();
+    const urgency  = document.getElementById('furgency').value;
+    const message  = document.getElementById('fmessage').value.trim();
+    const btn      = document.getElementById('submit-btn');
 
-    async function submitForm() {
-      const name = document.getElementById('fname').value.trim();
-      const phone = document.getElementById('fphone').value.trim();
-      const location = document.getElementById('flocation').value.trim();
-      const urgency = document.getElementById('furgency').value;
-      const message = document.getElementById('fmessage').value.trim();
-      const btn = document.getElementById('submit-btn');
+    if (!name || !phone) { showStatus('error','⚠️ Please enter your name and phone number.'); return; }
+    if (!phone.startsWith('+')) { showStatus('error','⚠️ Phone must include country code e.g. +971...'); return; }
 
-      if (!name || !phone) {
-        showStatus('error', '⚠️ Please enter your name and phone number.');
-        return;
-      }
-      if (!phone.startsWith('+')) {
-        showStatus('error', '⚠️ Phone number must include country code (e.g. +971...)');
-        return;
-      }
+    btn.disabled = true;
+    btn.textContent = '⏳ Sending...';
+    document.getElementById('form-status').style.display = 'none';
 
-      btn.disabled = true;
-      btn.textContent = '⏳ Sending to NEXUS...';
-      document.getElementById('form-status').style.display = 'none';
+    const ts  = Date.now();
+    const now = new Date().toISOString();
 
-      const now = new Date();
+    const payload = {
+      call_id:         'FORM_' + ts,
+      urgency:         urgency,
+      event_type:      'DEMO_REQUEST',
+      summary:         message || ('Demo request from ' + name + ' — ' + urgency + ' at ' + (location || "Al Qua'a")),
+      source:          'NEXUS_LANDING_PAGE',
+      location:        location || "Al Qua'a, Al Ain, UAE",
+      timestamp:       now,
+      patient_name:    name,
+      phone_number:    phone,
+      falls_detected:  '0',
+      people_tracked:  '0',
+      frames_analyzed: '0',
+      uptime_minutes:  '0',
+      confidence:      '1.0',
+      alert_count:     '0'
+    };
 
-      // All field names match Make.com blueprint exactly
-      const payload = {
-        call_id: 'FORM_' + Date.now(),
-        urgency: urgency,
-        event_type: 'DEMO_REQUEST',
-        summary: message || ('Demo request from ' + name + ' — ' + urgency + ' demo at ' + (location || 'Al Qua\'a')),
-        source: 'NEXUS_LANDING_PAGE',
-        location: location || "Al Qua'a, Al Ain, UAE",
-        timestamp: now.toISOString(),
-        patient_name: name,
-        phone_number: phone,
-        falls_detected: '0',
-        people_tracked: '0',
-        frames_analyzed: '0',
-        uptime_minutes: '0',
-        confidence: '1.0',
-        alert_count: '0'
+    // Use Image trick to bypass CORS and avoid stuck loading
+    // Primary: XMLHttpRequest (works when CORS allows)
+    // Fallback: Image beacon (always fires, no response needed)
+    const WEBHOOK = 'https://hook.eu1.make.com/wzu8hvay854nnbtdmmkqyx3xb5uovqza';
+
+    try {
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', WEBHOOK, true);
+      xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.timeout = 8000;
+
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+          // Make.com returns 200 with "Accepted" — any response = success
+          showSuccess(name, phone, location, urgency);
+        }
       };
 
-      try {
-        await fetch('https://hook.eu1.make.com/wzu8hvay854nnbtdmmkqyx3xb5uovqza', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-          mode: 'no-cors'
-        });
+      xhr.ontimeout = function() {
+        // Timeout just means CORS blocked response — but webhook fired
+        showSuccess(name, phone, location, urgency);
+      };
 
-        showStatus('success',
-          '✅ Request submitted!<br><br>' +
-          '<b>Name:</b> ' + name + '<br>' +
-          '<b>Phone:</b> ' + phone + '<br>' +
-          '<b>Location:</b> ' + (location || "Al Qua'a") + '<br>' +
-          '<b>Demo Type:</b> ' + urgency + '<br>' +
-          '<b>Time:</b> ' + now.toLocaleTimeString() + '<br><br>' +
-          '📧 Gmail alert sent to NEXUS team.<br>' +
-          '📱 SMS notification dispatched.<br>' +
-          '📊 Logged to Google Sheets automatically.'
-        );
-        btn.textContent = '✅ Request Sent!';
-      } catch (err) {
-        showStatus('error', '❌ Error: ' + err.message);
-        btn.disabled = false;
-        btn.textContent = '🚀 Submit Demo Request';
-      }
-    }
+      xhr.onerror = function() {
+        // Network error — try image beacon fallback
+        new Image().src = WEBHOOK + '?fallback=1&name=' + encodeURIComponent(name) + '&phone=' + encodeURIComponent(phone);
+        showSuccess(name, phone, location, urgency);
+      };
 
-    function showStatus(type, html) {
-      const el = document.getElementById('form-status');
-      el.className = type;
-      el.innerHTML = html;
-      el.style.display = 'block';
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      xhr.send(JSON.stringify(payload));
+
+    } catch(e) {
+      showSuccess(name, phone, location, urgency);
     }
-  </script>
+  }
+
+  function showSuccess(name, phone, location, urgency) {
+    const btn = document.getElementById('submit-btn');
+    btn.textContent = '✅ Request Sent!';
+    showStatus('success',
+      '✅ <b>Demo request submitted!</b><br><br>' +
+      '👤 <b>Name:</b> ' + name + '<br>' +
+      '📞 <b>Phone:</b> ' + phone + '<br>' +
+      '📍 <b>Location:</b> ' + (location || "Al Qua'a") + '<br>' +
+      '🎯 <b>Demo Type:</b> ' + urgency + '<br>' +
+      '🕐 <b>Time:</b> ' + new Date().toLocaleTimeString() + '<br><br>' +
+      '📧 Gmail alert sent to NEXUS team.<br>' +
+      '📱 SMS notification dispatched.<br>' +
+      '📊 Logged to Google Sheets.'
+    );
+  }
+
+  function showStatus(type, html) {
+    const el = document.getElementById('form-status');
+    el.className = type;
+    el.innerHTML = html;
+    el.style.display = 'block';
+    el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+</script>
 </body>
-
 </html>

@@ -11,16 +11,11 @@
             },
             "mapper": {},
             "metadata": {
-                "designer": {
-                    "x": 0,
-                    "y": 0
-                },
+                "designer": { "x": 0, "y": 0 },
                 "restore": {
                     "parameters": {
                         "hook": {
-                            "data": {
-                                "editable": "true"
-                            },
+                            "data": { "editable": "true" },
                             "label": "NEXUS Webhook"
                         }
                     }
@@ -76,134 +71,48 @@
                 "insertUnformatted": false
             },
             "metadata": {
-                "designer": {
-                    "x": 300,
-                    "y": 0
-                },
+                "designer": { "x": 300, "y": 0 },
                 "restore": {
                     "expect": {
-                        "from": {
-                            "label": "My Drive"
-                        },
-                        "mode": {
-                            "label": "Search by path"
-                        },
-                        "sheetId": {
-                            "label": "Sheet1"
-                        },
-                        "spreadsheetId": {
-                            "path": [
-                                "NEXUS Call Log"
-                            ]
-                        },
-                        "includesHeaders": {
-                            "label": "Yes"
-                        },
-                        "insertDataOption": {
-                            "mode": "chose",
-                            "label": "Insert rows"
-                        },
+                        "from": { "label": "My Drive" },
+                        "mode": { "label": "Search by path" },
+                        "sheetId": { "label": "Sheet1" },
+                        "spreadsheetId": { "path": ["NEXUS Call Log"] },
+                        "includesHeaders": { "label": "Yes" },
+                        "insertDataOption": { "mode": "chose", "label": "Insert rows" },
                         "useColumnHeaders": {
                             "label": "No",
                             "nested": [
                                 {
                                     "name": "values",
                                     "spec": [
-                                        {
-                                            "name": "0",
-                                            "type": "text",
-                                            "label": "call_id (A)"
-                                        },
-                                        {
-                                            "name": "1",
-                                            "type": "text",
-                                            "label": "urgency (B)"
-                                        },
-                                        {
-                                            "name": "2",
-                                            "type": "text",
-                                            "label": "event_type (C)"
-                                        },
-                                        {
-                                            "name": "3",
-                                            "type": "text",
-                                            "label": "summary (D)"
-                                        },
-                                        {
-                                            "name": "4",
-                                            "type": "text",
-                                            "label": "source (E)"
-                                        },
-                                        {
-                                            "name": "5",
-                                            "type": "text",
-                                            "label": "location (F)"
-                                        },
-                                        {
-                                            "name": "6",
-                                            "type": "text",
-                                            "label": "falls_detected (G)"
-                                        },
-                                        {
-                                            "name": "7",
-                                            "type": "text",
-                                            "label": "people_tracked (H)"
-                                        },
-                                        {
-                                            "name": "8",
-                                            "type": "text",
-                                            "label": "frames_analyzed (I)"
-                                        },
-                                        {
-                                            "name": "9",
-                                            "type": "text",
-                                            "label": "uptime_minutes (J)"
-                                        },
-                                        {
-                                            "name": "10",
-                                            "type": "text",
-                                            "label": "confidence (K)"
-                                        },
-                                        {
-                                            "name": "11",
-                                            "type": "text",
-                                            "label": "alert_count (L)"
-                                        },
-                                        {
-                                            "name": "12",
-                                            "type": "text",
-                                            "label": "timestamp (M)"
-                                        },
-                                        {
-                                            "name": "13",
-                                            "type": "text",
-                                            "label": "patient_name (N)"
-                                        },
-                                        {
-                                            "name": "14",
-                                            "type": "text",
-                                            "label": "phone_number (O)"
-                                        }
+                                        { "name": "0",  "type": "text", "label": "call_id (A)" },
+                                        { "name": "1",  "type": "text", "label": "urgency (B)" },
+                                        { "name": "2",  "type": "text", "label": "event_type (C)" },
+                                        { "name": "3",  "type": "text", "label": "summary (D)" },
+                                        { "name": "4",  "type": "text", "label": "source (E)" },
+                                        { "name": "5",  "type": "text", "label": "location (F)" },
+                                        { "name": "6",  "type": "text", "label": "falls_detected (G)" },
+                                        { "name": "7",  "type": "text", "label": "people_tracked (H)" },
+                                        { "name": "8",  "type": "text", "label": "frames_analyzed (I)" },
+                                        { "name": "9",  "type": "text", "label": "uptime_minutes (J)" },
+                                        { "name": "10", "type": "text", "label": "confidence (K)" },
+                                        { "name": "11", "type": "text", "label": "alert_count (L)" },
+                                        { "name": "12", "type": "text", "label": "timestamp (M)" },
+                                        { "name": "13", "type": "text", "label": "patient_name (N)" },
+                                        { "name": "14", "type": "text", "label": "phone_number (O)" }
                                     ],
                                     "type": "collection",
                                     "label": "Values in columns"
                                 }
                             ]
                         },
-                        "valueInputOption": {
-                            "mode": "chose",
-                            "label": "User entered"
-                        },
-                        "insertUnformatted": {
-                            "mode": "chose"
-                        }
+                        "valueInputOption": { "mode": "chose", "label": "User entered" },
+                        "insertUnformatted": { "mode": "chose" }
                     },
                     "parameters": {
                         "__IMTCONN__": {
-                            "data": {
-                                "scoped": "true",
-                                "connection": "google"
-                            },
+                            "data": { "scoped": "true", "connection": "google" },
                             "label": "My Google connection"
                         }
                     }
@@ -223,12 +132,7 @@
             "module": "builtin:BasicRouter",
             "version": 1,
             "mapper": null,
-            "metadata": {
-                "designer": {
-                    "x": 600,
-                    "y": 0
-                }
-            },
+            "metadata": { "designer": { "x": 600, "y": 0 } },
             "routes": [
                 {
                     "flow": [
@@ -240,36 +144,21 @@
                                 "__IMTCONN__": 8559662
                             },
                             "mapper": {
-                                "to": [
-                                    "yuvypandey143@gmail.com"
-                                ],
+                                "to": ["yuvypandey143@gmail.com"],
                                 "subject": "🚨 NEXUS {{2.urgency}} ALERT — {{2.event_type}} — {{2.call_id}}",
                                 "bodyType": "rawHtml",
                                 "content": "<h2 style='color:#d32f2f'>NEXUS Emergency Alert</h2><table border='1' cellpadding='8' style='border-collapse:collapse;font-family:sans-serif'><tr><td><b>Name</b></td><td>{{2.patient_name}}</td></tr><tr><td><b>Phone</b></td><td>{{2.phone_number}}</td></tr><tr><td><b>Event</b></td><td>{{2.event_type}}</td></tr><tr><td><b>Urgency</b></td><td style='color:red'>{{2.urgency}}</td></tr><tr><td><b>Location</b></td><td>{{2.location}}</td></tr><tr><td><b>Summary</b></td><td>{{2.summary}}</td></tr><tr><td><b>Source</b></td><td>{{2.source}}</td></tr><tr><td><b>Falls Detected</b></td><td>{{2.falls_detected}}</td></tr><tr><td><b>People Tracked</b></td><td>{{2.people_tracked}}</td></tr><tr><td><b>Frames Analyzed</b></td><td>{{2.frames_analyzed}}</td></tr><tr><td><b>Uptime (min)</b></td><td>{{2.uptime_minutes}}</td></tr><tr><td><b>Timestamp</b></td><td>{{2.timestamp}}</td></tr><tr><td><b>Call ID</b></td><td>{{2.call_id}}</td></tr></table><hr/><p style='color:gray;font-size:12px'>NEXUS Autonomous Emergency Platform v4 | Al Qua'a, UAE | Loop Engineering 2026</p>"
                             },
                             "metadata": {
-                                "designer": {
-                                    "x": 900,
-                                    "y": -150
-                                },
+                                "designer": { "x": 900, "y": -150 },
                                 "restore": {
                                     "expect": {
-                                        "to": {
-                                            "mode": "chose",
-                                            "items": [
-                                                null
-                                            ]
-                                        },
-                                        "bodyType": {
-                                            "label": "Raw HTML"
-                                        }
+                                        "to": { "mode": "chose", "items": [null] },
+                                        "bodyType": { "label": "Raw HTML" }
                                     },
                                     "parameters": {
                                         "__IMTCONN__": {
-                                            "data": {
-                                                "scoped": "true",
-                                                "connection": "google-email"
-                                            },
+                                            "data": { "scoped": "true", "connection": "google-email" },
                                             "label": "My Gmail connection (yuvypandey143@gmail.com)"
                                         }
                                     }
@@ -303,31 +192,16 @@
                                 "messageBody": "body"
                             },
                             "metadata": {
-                                "designer": {
-                                    "x": 900,
-                                    "y": 145
-                                },
+                                "designer": { "x": 900, "y": 145 },
                                 "restore": {
                                     "expect": {
-                                        "from": {
-                                            "mode": "chose",
-                                            "label": "(762) 324-0188"
-                                        },
-                                        "fromType": {
-                                            "mode": "chose",
-                                            "label": "phone number"
-                                        },
-                                        "messageBody": {
-                                            "mode": "chose",
-                                            "label": "Create a Body"
-                                        }
+                                        "from": { "mode": "chose", "label": "(762) 324-0188" },
+                                        "fromType": { "mode": "chose", "label": "phone number" },
+                                        "messageBody": { "mode": "chose", "label": "Create a Body" }
                                     },
                                     "parameters": {
                                         "__IMTCONN__": {
-                                            "data": {
-                                                "scoped": "true",
-                                                "connection": "twilio"
-                                            },
+                                            "data": { "scoped": "true", "connection": "twilio" },
                                             "label": "My Twilio connection"
                                         }
                                     }
@@ -362,9 +236,7 @@
             "dlq": false,
             "freshVariables": false
         },
-        "designer": {
-            "orphans": []
-        },
+        "designer": { "orphans": [] },
         "zone": "eu1.make.com",
         "notes": []
     }
